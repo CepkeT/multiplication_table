@@ -73,11 +73,13 @@ async def make_move(update: Update, context: CallbackContext) -> None:
             # Игрок выиграл
             await query.message.reply_text(f'Игрок {player} победил!')
             play_fireworks()  # анимация(потомXD)
+            game_queue.clear()  # Clear the game queue
             return  # Стопить дальнейшей ход на доске
 
         elif all(board[row][col] != ' ' for row in range(3) for col in range(3)):
             # Draw
             await query.message.reply_text('Ничья!')
+            game_queue.clear()  # Clear the game queue
             return  # Стопить дальнейшей ход на доске
 
         else:
@@ -91,11 +93,13 @@ async def make_move(update: Update, context: CallbackContext) -> None:
                 # Бот выиграл
                 await query.message.reply_text(f'Бот {bot_player} победил!')
                 play_fireworks()  # анимация(потомXD)
+                game_queue.clear()  # Clear the game queue
                 return  # Стопить дальнейший ход на доске
 
             elif all(board[row][col] != ' ' for row in range(3) for col in range(3)):
                 # Draw
                 await query.message.reply_text('Draw!')
+                game_queue.clear()  # Clear the game queue
                 return  # Стопить дальнейший ход на доске
 
         # Обновление кнопок
@@ -134,106 +138,7 @@ async def process_game_queue(update: Update, context: CallbackContext) -> None:
 
 
 async def start_game_for_players(players, update: Update, context: CallbackContext) -> None:
-    # Clear the game board
-    for row in range(3):
-        for col in range(3):
-            board[row][col] = ' '
+   The code you provided is a Python script for a Tic Tac Toe game bot using the Telegram API. It allows users to play Tic Tac Toe against a bot. The bot logic is implemented in the `make_move` function, which handles the user's move and the bot's move.
 
-    await update.message.reply_text('Tic Tac Toe')
-
-    # Send a message to each player with the game board and their symbol
-    for i, player in enumerate(players):
-        symbol = PLAYER_X if i == 0 else PLAYER_O
-        keyboard = [
-            [
-                InlineKeyboardButton(' ', callback_data=f'move_{symbol}_{row}_{col}')
-                for col in range(3)
-            ]
-            for row in range(3)
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await context.bot.send_message(chat_id=player.id, text=f'Your move: {symbol}', reply_markup=reply_markup)
-
-
-async def start_game(update: Update, context: CallbackContext) -> None:
-    user = update.message.from_user
-
-    if user.id in [u.id for u in game_queue]:
-        if len(game_queue) >= 2:
-            await update.message.reply_text('You are already in the game queue!')
-        else:
-            await update.message.reply_text('You are already in the game queue! Waiting for another player...')
-        return
-
-    game_queue.append(user)
-
-    await update.message.reply_text('Ты добавлен в очередь')
-
-    # Process the game queue
-    await process_game_queue(update, context)
-
-    # Clear the game board
-    for row in range(3):
-        for col in range(3):
-            board[row][col] = ' '
-
-    await update.message.reply_text('крестики нолики')
-
-    # Отправить сообщение с кнопками выбора хода
-    keyboard = [
-        [
-            InlineKeyboardButton(' ', callback_data='move_X_0_0'),
-            InlineKeyboardButton(' ', callback_data='move_X_0_1'),
-            InlineKeyboardButton(' ', callback_data='move_X_0_2'),
-        ],
-        [
-            InlineKeyboardButton(' ', callback_data='move_X_1_0'),
-            InlineKeyboardButton(' ', callback_data='move_X_1_1'),
-            InlineKeyboardButton(' ', callback_data='move_X_1_2'),
-        ],
-        [
-            InlineKeyboardButton(' ', callback_data='move_X_2_0'),
-            InlineKeyboardButton(' ', callback_data='move_X_2_1'),
-            InlineKeyboardButton(' ', callback_data='move_X_2_2'),
-        ],
-    ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await update.message.reply_text('Твой ход', reply_markup=reply_markup)
-
-
-# Функция для обновления кнопок после каждого хода
-async def update_buttons(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    player, row, col = query.data.split('_')[1:]
-
-    # Обновляем символ игрока на поле
-    board[int(row)][int(col)] = player
-
-    # Обновляем кнопки с символами X и O
-    keyboard = [
-        [
-            InlineKeyboardButton('X' if board[row][col] == PLAYER_X else ' ' if board[row][col] == ' ' else 'O',
-                                 callback_data=f'move_{player}_{row}_{col}')
-            for col in range(3)
-        ]
-        for row in range(3)
-    ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.message.edit_reply_markup(reply_markup)
-
-
-# Создаем экземпляр приложения
-app = ApplicationBuilder().token("6581992513:AAFSuk41_gC3avbA70xqcCpJUx1xXChBzMo").build()
-
-# Добавляем обработчики команд
-app.add_handler(CommandHandler("hello", hello))
-app.add_handler(CommandHandler("play", start_game))
-
-# Добавляем обработчик для выбора хода
-app.add_handler(CallbackQueryHandler(make_move, pattern='^move_[XO]_[0-2]_[0-2]$'))
-
-# Запускаем приложение
-app.run_polling()
+To fix the issue where the bot still thinks you are playing even after the game has ended, you need to clear the `game_queue` list after the game is finished. You can add the following line of code at the end of the `make_move` function:
+game_queue.clear()
