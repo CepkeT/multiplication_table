@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, CallbackQueryHandler , D
 import random
 import time
 
@@ -159,7 +159,7 @@ async def start_game(update: Update, context: CallbackContext) -> None:
     user = update.message.from_user
 
     if user.id in [u.id for u in game_queue]:
-        if len(game_queue) >= 2:
+        if len(game_queue) >= 1:
             await update.message.reply_text('You are already in the game queue!')
         else:
             await update.message.reply_text('You are already in the game queue! Waiting for another player...')
